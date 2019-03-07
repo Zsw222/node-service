@@ -2,15 +2,15 @@
 var express = require('express');
 var router = express.Router();
 var jwtauth = require('../auth/jwtAuth')
-const Category = require('../models/category.js')
+const labels = require('../models/labels.js')
 // 查
 router.use(jwtauth).get("/list", (req, res, next) => {
     // 查询数据库
-    Category
+    labels
         .find({})
         .then((resData) => {
             if (!resData) {
-                res.json(formate(2000, '', 'err'))
+                res.json(formate(2000, '', 'error'))
                 return
             }
             let newRes=[]
@@ -24,17 +24,20 @@ router.use(jwtauth).get("/list", (req, res, next) => {
 })
 // 增
 router.use(jwtauth).post("/list", (req, res, next) => {
-    // 查询数据库
     if (!req.body.title || req.body.title === '') {
         res.json(formate(2000, '', 'error'))
         return;
     }
     let resp = {
         title: req.body.title,
-        remark: req.body.remark
+        remark: req.body.remark,
+        color:req.body.color
     }
-    Category.create(resp, function (err, response) {
-        if (err) throw err;
+    labels.create(resp, function (err, response) {
+        if (err){
+            res.json(formate(2000, '', err.message));
+            return
+        }
         res.json(formate(200, '', 'ok'))
     })
 })
@@ -47,9 +50,10 @@ router.use(jwtauth).put("/list", (req, res, next) => {
     }
     let resp = {
         title: req.body.title,
-        remark: req.body.remark
+        remark: req.body.remark,
+        color:req.body.color
     }
-    Category.update({_id:req.body._id},{$set:resp}, function (err, response) {
+    labels.update({_id:req.body._id},{$set:resp}, function (err, response) {
         if (err) throw err;
         res.json(formate(200, '', 'ok'))
     })
@@ -61,7 +65,7 @@ router.use(jwtauth).delete("/list", (req, res, next) => {
         res.json(formate(2000, '', 'error'))
         return;
     }
-    Category.find({_id:req.body._id}).remove({},function(err,response){
+    labels.find({_id:req.body._id}).remove({},function(err,response){
         if (err) throw err;
         res.json(formate(200, '', 'ok'))
     })
